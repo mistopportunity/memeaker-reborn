@@ -45,3 +45,6 @@ div#render-results img {
     margin-bottom: 20px;
     box-shadow: 0 0px 1px 0px #c4c4c4;
 }
+div#render-results img.materialboxed:hover:not(.active) {
+    opacity: 1 !important;
+}
