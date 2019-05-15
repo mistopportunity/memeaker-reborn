@@ -77,7 +77,10 @@ const memefo = {
         "niggers",
         "naggers",
         "queers",
-        "whores"
+        "whores",
+        "thots",
+        "e-girls",
+        "Nazis"
     ],
     subjectsSingular: [
         "a nigger",
@@ -140,7 +143,27 @@ const memefo = {
         "Drake",
         "a douchebag",
         "a douche",
-        "a faggot"
+        "a faggot",
+        "my dad",
+        "my grandpa",
+        "my grandma",
+        "my friend",
+        "my dick",
+        "my vagina",
+        "my body",
+        "my boobs",
+        "my brain",
+        "my ideas",
+        "my thoughts",
+        "my hands",
+        "my feet",
+        "my eyes",
+        "my mouth",
+        "an intellectual",
+        "a thot",
+        "Hitler",
+        "Donald Trump",
+        "The United States"
     ],
     verbs: [
         "fuck",

@@ -1,7 +1,7 @@
 Array.prototype.getRandom = function() {
     return this[Math.floor(Math.random() * this.length)];
 }
-const blockedTags = ["a","some"].reduce((pv,cv)=>{
+const blockedTags = ["a","some","my"].reduce((pv,cv)=>{
     pv[cv] = true;
     return pv;
 },{});
@@ -230,6 +230,13 @@ const BasicCachedRender = function(format,callback,renderLogic) {
         });
     };
     image.src = format.src;
+}
+const drawOutlinedText = (context,text,x,y) => {
+    context.strokeStyle = "black";
+    context.lineWidth = 3;
+    context.strokeText(text,x,y);
+    context.fillStyle = "white";
+    context.fillText(text,x,y);
 }
 const MemeFormats = {
     MEMEAKER_CLASSIC: new (function(){
@@ -494,6 +501,60 @@ const MemeFormats = {
                 const textY2 = Math.round((canvas.height / 4) * 3);
                 context.fillText(box1,textX,textY1);
                 context.fillText(box2,textX,textY2);
+            });
+        }
+    })(),
+    ConfusedAnimeGuy: new (function(){
+        this.res = {
+            x: 909,
+            y: 682
+        };
+        this.src = "butterfly.jpg";
+        this.subformats = [
+            ["Is this","@subject-random",">?"]
+        ];
+        this.render = (memeData,callback) => {
+            BasicCachedRender(this,callback,(context,canvas,image)=>{
+                context.fillStyle = "white";
+                context.fillRect(0,0,canvas.width,canvas.height);
+                context.drawImage(image,0,0);
+
+                context.font = "34px Arial";
+                context.textBaseline = "middle"; 
+                context.textAlign = "center";
+
+                let subject = memeData.subject1 || getSubject();
+                subject = subject.substring(0,1).toUpperCase() + subject.substring(1);
+
+                memeData.subject = subject;
+                const captionText = formatSubformatLine(memeData,this.subformats.getRandom());
+
+                let manText;
+                let butterflyText;
+
+                let secondSubject = getSubject();
+
+                secondSubject = secondSubject.substring(0,1).toUpperCase() + secondSubject.substring(1);
+
+                if(Math.random() > 0.5) {
+                    butterflyText = subject;
+                    if(Math.random() < 0.68) {
+                        manText = secondSubject;
+                    }
+                } else {
+                    manText = subject;
+                    if(Math.random() < 0.68) {
+                        butterflyText = secondSubject;
+                    }
+                }
+
+                drawOutlinedText(context,captionText,474,616);
+                if(manText) {
+                    drawOutlinedText(context,manText,300,135);
+                }
+                if(butterflyText) {
+                    drawOutlinedText(context,butterflyText,715,117);
+                }
             });
         }
     })()

@@ -96,6 +96,8 @@ const getCurrentMemeFormat = () => {
             return MemeFormats.SavagePatrick;
         case 4:
             return MemeFormats.BlackJacket;
+        case 5:
+            return MemeFormats.ConfusedAnimeGuy;
     }
 }
 
