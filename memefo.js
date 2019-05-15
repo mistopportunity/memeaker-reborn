@@ -175,7 +175,10 @@ const memefo = {
         "drink",
         "murder",
         "protec",
-        "attac"
+        "attac",
+        "love",
+        "sext",
+        "strangle"
     ]
 }
 memefo.subjects = [...memefo.subjectsPlural,...memefo.subjectsSingular];

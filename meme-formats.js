@@ -6,6 +6,7 @@ const blockedTags = ["a","some"].reduce((pv,cv)=>{
     return pv;
 },{});
 const FIRST_PARTY_DELAY = 1000;
+const MemeFormatRoot = "meme-images/";
 function drawImageCover(context,imageElement,fullWidth,fullHeight) {
     const ratio = imageElement.width / imageElement.height;
     if(ratio > 1) {
@@ -190,7 +191,6 @@ function formatSubformatLine(data,subformat,lastSubject=null) {
     });
     return text.substring(0,text.length-1);
 }
-const MemeFormatRoot = "/meme-images/";
 const MemeFormats = {
     MEMEAKER_CLASSIC: new (function(){
 
@@ -378,7 +378,11 @@ const MemeFormats = {
             ["*dies*"],
             ["*starts to","@verb-random",">*"],
             ["be","@subject-random"],
-            ["wondering about","@subject-random"]
+            ["wondering about","@subject-random"],
+            ["thinking about","@subject-random"],
+            ["hoping for","@subject-random"],
+            ["wanting","@subject-random"],
+            ["crying because of","@subject-random"],
         ];
         
         this.render = (memeData,callback) => {
