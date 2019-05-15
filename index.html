@@ -13,15 +13,28 @@
     <div id="container">
         <h2 id="title">m e m e a k e r<br><b>reborn</b></h2>
         <p id="subtitle">Will the gods still show their faces?</p>
-        <div id="meme-settings" class="row">
-            <div class="input-field col s12">
-                <i class="material-icons prefix">all_inclusive</i>
-                <input id="subject-input" type="text">
-                <label for="subject-input">What is your meme about?</label>
+        <div id="meme-settings">
+            <div class="row">
+                <div class="input-field col s12">
+                    <i class="material-icons prefix">all_inclusive</i>
+                    <input id="subject-input" type="text">
+                    <label for="subject-input">What is your meme about?</label>
+                </div>
+                <div class="input-field col s12">
+                    <select id="meme-type-selector">
+                        <option value="-1" disabled>Choose a meme type</option>
+                        <option value="0" selected>Random</option>
+                        <option value="1">Classic</option>
+                        <option value="2">Surprised Pikachu</option>
+                        <option value="3">Savage Patrick</option>
+                        <option value="4">Drake</option>
+                    </select>
+                    <label>What type of meme do you want?</label>
+                </div>
+                <div class="input-field col s12">
+                    <button class="btn-large waves-effect waves-light input-field col s12" id="ready-button">MEMEAKE</button>
+                </div>
             </div>
-            <button class="btn waves-effect waves-light input-field col s12" id="ready-button">MEMEAKE
-
-            </button>
         </div>
         <div hidden id="loading-gifs">
             <div id="loading-bar" class="progress">

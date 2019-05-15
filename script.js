@@ -5,11 +5,13 @@ const memeSettings = document.getElementById("meme-settings");
 const subtitle = document.getElementById("subtitle");
 const renderResults = document.getElementById("render-results");
 const subjectInput = document.getElementById("subject-input");
+const memeTypeSelector = document.getElementById("meme-type-selector");
 const MAX_SUBJECT_LENGTH = "raven and hose".length;
 
+const GODS_FAILED_FORMAT_TEXT = "The gods cannot make a meme with this subject and this type. Try another format?";
 const GODS_FAILED_TEXT = "The gods were unable to generate a meme at this time. Try again?";
 const GODS_SPOKEN_TEXT = "The gods have spoken";
-const MAX_PREVIOUS_RESULTS = 4;
+const MAX_PREVIOUS_RESULTS = 6;
 
 let loadingGifIndex = 0;
 const thinkingMessageRefresh = 2500;
@@ -68,22 +70,66 @@ const HideLoadingGif = () => {
     memeSettings.removeAttribute("hidden");
     loadingGifs.setAttribute("hidden",true);
 }
+const rewriteCanvasElement = (canvasElement,callback) => {
+    const dataURL = canvasElement.toDataURL();
+    const imageElement = new Image();
+    imageElement.src = dataURL;
+    imageElement.className = "materialboxed";
+    callback({
+        element: imageElement,
+        failed: false
+    });
+}
+let usingFixedFormat = false;
+const getCurrentMemeFormat = () => {
+    usingFixedFormat = true;
+    switch(Number(memeTypeSelector.value)) {
+        default:
+        case 0:
+            usingFixedFormat = false;
+            return MemeFormatsList.getRandom();
+        case 1:
+            return MemeFormats.MEMEAKER_CLASSIC;
+        case 2:
+            return MemeFormats.SurprisedPikachu;
+        case 3:
+            return MemeFormats.SavagePatrick;
+        case 4:
+            return MemeFormats.BlackJacket;
+    }
+}
+
 const readyButtonClicked = () => {
     ShowLoadingGif();
-    const memeFormat = MemeFormatsList.getRandom();
+    const memeFormat = getCurrentMemeFormat();
     const callback = result => {
-        HideLoadingGif();
         if(result.failed) {
-            subtitle.textContent = GODS_FAILED_TEXT;
-        } else {
-            subtitle.textContent = GODS_SPOKEN_TEXT;
-            renderResults.insertBefore(
-                result.element,
-                renderResults.children[0]
-            );
-            if(renderResults.children.length > MAX_PREVIOUS_RESULTS) {
-                renderResults.removeChild(renderResults.lastChild);
+            if(result.forcedFormatFailure) {
+                subtitle.textContent = GODS_FAILED_FORMAT_TEXT;
+            } else {
+                subtitle.textContent = GODS_FAILED_TEXT;
             }
+            HideLoadingGif();
+            return;
+        } else {
+            rewriteCanvasElement(result.element,result=>{
+                HideLoadingGif();
+                if(result.failed) {
+                    subtitle.textContent = GODS_FAILED_TEXT;
+                    return;
+                } else {
+                    subtitle.textContent = GODS_SPOKEN_TEXT;
+                    renderResults.insertBefore(
+                        result.element,
+                        renderResults.children[0]
+                    );
+                    if(renderResults.children.length > MAX_PREVIOUS_RESULTS) {
+                        renderResults.removeChild(renderResults.lastChild);
+                    }
+                    const renderResultImages = renderResults.querySelectorAll(".materialboxed");
+                    M.Materialbox.init(renderResultImages,null);
+                }
+            });
         }
     }
     const memeData = {};
@@ -98,7 +144,7 @@ const readyButtonClicked = () => {
         subtitle.textContent = GODS_FAILED_TEXT;
         console.error(error);
     }
-
     return false;
 }
 readyButton.addEventListener("click",readyButtonClicked);
+M.AutoInit();

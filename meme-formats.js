@@ -177,7 +177,7 @@ function formatSubformatLine(data,subformat,lastSubject=null) {
         } else if(token.startsWith(">")) {
             text = text.substring(0,text.length-1);
             text += token.substring(1);
-        } else if(token.endsWith(">")) {
+        } else if(token.endsWith("<")) {
             skipSpace = true;
             text += token.substring(0,token.length-1);
         } else {
@@ -191,6 +191,46 @@ function formatSubformatLine(data,subformat,lastSubject=null) {
     });
     return text.substring(0,text.length-1);
 }
+const BasicCachedRender = function(format,callback,renderLogic) {
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    canvas.width = format.res.x;
+    canvas.height = format.res.y;
+    const process = image => {
+        setTimeout(()=>{
+            try {
+                renderLogic.call(format,context,canvas,image);
+            } catch(error) {
+                console.error("Failure executing custom render logic",error);
+                callback({
+                    failed: true
+                });
+                return;
+            }
+            callback({
+                element: canvas,
+                failed: false
+            });
+        },FIRST_PARTY_DELAY);
+    };
+    if(format.imageElement) {
+        process(format.imageElement);
+        return;
+    }
+    const image = new Image();
+    image.crossOrigin = "Anonymous";
+    image.onload = () => {
+        format.imageElement = image;
+        process(image);
+    }
+    image.onerror = () => {
+        console.warn(`Failed to load ${format.src}`);
+        callback({
+            failed: true
+        });
+    };
+    image.src = format.src;
+}
 const MemeFormats = {
     MEMEAKER_CLASSIC: new (function(){
 
@@ -199,7 +239,6 @@ const MemeFormats = {
         const fullWidth = 800;
         const fullHeight = 600;
         const halfWidth = fullWidth / 2;
-        const halfHeight = fullHeight / 2;
 
         const memeTypes = [
             "VS-GO",
@@ -276,13 +315,21 @@ const MemeFormats = {
             getFlickrImage(meme.subject,result => {
                 if(result.failed) {
                     if(result.retryFirstParty) {
-                        const newFormat = FirstPartyOnlyFormatList.getRandom();
-                        newFormat.render(memeData,callback);
+                        if(usingFixedFormat) {
+                            callback({
+                                forcedFormatFailure: true,
+                                failed: true
+                            });
+                        } else {
+                            const newFormat = FirstPartyOnlyFormatList.getRandom();
+                            newFormat.render(memeData,callback);
+                        }
                     } else {
                         callback(result);
                     }
                 } else {
                     const imageElement = new Image();
+                    imageElement.crossOrigin = "Anonymous";
                     imageElement.onerror = () => {
                         console.warn("Could not load/parse an image URL received from Flickr");
                         callback({
@@ -318,45 +365,22 @@ const MemeFormats = {
         };
         this.src = "patrick.jpg",
         this.render = (memeData,callback) => {
-            const canvas = document.createElement("canvas");
-            const context = canvas.getContext("2d");
-
-            const textMargin = 40;
-            const xStart = 10;
-            canvas.width = this.res.x;
-            canvas.height = this.res.y;
-            canvas.height += textMargin;
-            context.font = "16px Arial";
-
-            const image = new Image();
-            image.onload = () => {
-                setTimeout(()=>{
-                    context.drawImage(image,0,textMargin);
-                    context.fillStyle = "white";
-                    context.fillRect(0,0,canvas.width,textMargin);
-                    context.fillStyle = "black";
-    
-                    const text = formatSubformatLine(
-                        memeData,
-                        this.subformats.getRandom()
-                    ).toLowerCase();
-    
-                    context.textBaseline = "middle";
-                    context.fillText(text,xStart,textMargin/2);
-    
-                    callback({
-                        element: canvas,
-                        failed: false
-                    });
-                },FIRST_PARTY_DELAY);
-            };
-            image.onerror = () => {
-                console.warn(`Failed to load ${this.src}`);
-                callback({
-                    failed: true
-                });
-            };
-            image.src = this.src;
+            BasicCachedRender(this,callback,(context,canvas,image)=>{
+                const textMargin = 40;
+                const xStart = 10;
+                canvas.height += textMargin;
+                context.font = "16px Arial";
+                context.drawImage(image,0,textMargin);
+                context.fillStyle = "white";
+                context.fillRect(0,0,canvas.width,textMargin);
+                context.fillStyle = "black";
+                const text = formatSubformatLine(
+                    memeData,
+                    this.subformats.getRandom()
+                ).toLowerCase();
+                context.textBaseline = "middle";
+                context.fillText(text,xStart,textMargin/2);
+            });
         };
     })(),
     SurprisedPikachu: new (function(){
@@ -374,7 +398,7 @@ const MemeFormats = {
             ["gets","@subject-random"],
             ["@subject-single"],
             ["@verb-random","@subject-single"],
-            ["*>","@verb-random","@subject-plural",">*"],
+            ["*<","@verb-random","@subject-plural",">*"],
             ["*dies*"],
             ["*starts to","@verb-random",">*"],
             ["be","@subject-random"],
@@ -386,66 +410,91 @@ const MemeFormats = {
         ];
         
         this.render = (memeData,callback) => {
-            if(Math.random() < 0.25) {
-                memeData.subject2 = "me";
-            }
-            if(!memeData.subject1) {
-                memeData.subject1 = getSubject();
-            }
-            if(!memeData.subject2) {
-                memeData.subject2 = getSubject();
-            }
-            if(Math.random() < 0.25) {
-                const tmp = memeData.subject1;
-                memeData.subject1 = memeData.subject2;
-                memeData.subject2 = tmp;
-            }
-            const line1Prefix = `${memeData.subject1}: `;
-            const line2Prefix = `${memeData.subject2}: `;
-
-            const subformat1 = subformats[Math.floor(Math.random() * subformats.length)];
-            const subformat2 = subformats[Math.floor(Math.random() * subformats.length)];
-
-            const line1 = line1Prefix + formatSubformatLine(memeData,subformat1,memeData.subject1);
-            const line2 = line2Prefix + formatSubformatLine(memeData,subformat2,memeData.subject2);
-            const line3 = line1Prefix;
-
-            const canvas = document.createElement("canvas");
-            canvas.width = this.res.x;
-            canvas.height = this.res.y;
-            const context = canvas.getContext("2d");
-
-
-            const image = new Image();
-            image.onerror = () => {
-                console.warn(`Failure to load ${this.src}`);
-                callback({
-                    failed: true
-                });
-            };
-            image.onload = () => {
-                setTimeout(()=>{
-                    const xStart = 25;
-                    context.fillStyle = "white";
-                    context.fillRect(0,0,this.res.x,this.res.y);
-
-                    context.drawImage(image,0,0);
+            BasicCachedRender(this,callback,(context,canvas,image)=>{
+                if(Math.random() < 0.25) {
+                    memeData.subject2 = "me";
+                }
+                if(!memeData.subject1) {
+                    memeData.subject1 = getSubject();
+                }
+                if(!memeData.subject2) {
+                    memeData.subject2 = getSubject();
+                }
+                if(Math.random() < 0.25) {
+                    const tmp = memeData.subject1;
+                    memeData.subject1 = memeData.subject2;
+                    memeData.subject2 = tmp;
+                }
+                const line1Prefix = `${memeData.subject1}: `;
+                const line2Prefix = `${memeData.subject2}: `;
     
-                    context.font = "28px Calibri";
-                    context.textBaseline = "middle";
-                    context.fillStyle = "black";
+                const subformat1 = subformats[Math.floor(Math.random() * subformats.length)];
+                const subformat2 = subformats[Math.floor(Math.random() * subformats.length)];
     
-                    context.fillText(line1,xStart,Math.floor(210 / 4 * 1));
-                    context.fillText(line2,xStart,Math.floor(210 / 4 * 2));
-                    context.fillText(line3,xStart,Math.floor(210 / 4 * 3));
-    
-                    callback({
-                        element: canvas,
-                        failed: false
-                    });
-                },FIRST_PARTY_DELAY);
-            };
-            image.src = this.src;
+                const line1 = line1Prefix + formatSubformatLine(memeData,subformat1,memeData.subject1);
+                const line2 = line2Prefix + formatSubformatLine(memeData,subformat2,memeData.subject2);
+                const line3 = line1Prefix;
+
+                const xStart = 25;
+                context.fillStyle = "white";
+                context.fillRect(0,0,this.res.x,this.res.y);
+
+                context.drawImage(image,0,0);
+
+                context.font = "28px Calibri";
+                context.textBaseline = "middle";
+                context.fillStyle = "black";
+
+                context.fillText(line1,xStart,Math.floor(210 / 4 * 1));
+                context.fillText(line2,xStart,Math.floor(210 / 4 * 2));
+                context.fillText(line3,xStart,Math.floor(210 / 4 * 3));
+            });
+        }
+    })(),
+    BlackJacket: new (function(){
+        this.res = {
+            x: 800,
+            y: 796
+        };
+        this.subformatsWithSubject = [
+            ["@subject","get%","@subject-random"],
+            ["being","@subject"],
+            ["@verb-random","@subject"]
+        ];
+        this.subformats = [
+            ...this.subformatsWithSubject,
+            ["getting new","@subject-plural"],
+            ["*<","@verb-random",">*"],
+            ["being","@subject-random"],
+            ["@subject-single"]
+        ];
+        this.src = "blackjacket.jpg",
+        this.render = (memeData,callback) => {
+            BasicCachedRender(this,callback,(context,canvas,image)=>{
+                context.textAlign = "center";
+                context.textBaseline = "middle";
+                context.font = "28px Arial";
+
+                let box1 = formatSubformatLine(memeData,this.subformatsWithSubject.getRandom());
+                let box2 = formatSubformatLine(memeData,this.subformats.getRandom());
+
+                if(Math.random() > 0.5) {
+                    let tmp = box1;
+                    box1 = box2;
+                    box2 = tmp;
+                }
+
+                context.fillStyle = "white";
+                context.fillRect(0,0,canvas.width,canvas.height);
+                context.drawImage(image,0,0);
+
+                context.fillStyle = "black";
+                const textX = Math.round((canvas.width / 4) * 3);
+                const textY1 = Math.round((canvas.height / 4) * 1);
+                const textY2 = Math.round((canvas.height / 4) * 3);
+                context.fillText(box1,textX,textY1);
+                context.fillText(box2,textX,textY2);
+            });
         }
     })()
 }
