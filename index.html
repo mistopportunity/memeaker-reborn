@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>memeaker: reborn</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <div id="container">
+        <h2 id="title">m e m e a k e r<br><b>reborn</b></h2>
+        <p id="subtitle">Will the gods still show their faces?</p>
+        <div id="meme-settings" class="row">
+            <div class="input-field col s12">
+                <i class="material-icons prefix">all_inclusive</i>
+                <input id="subject-input" type="text">
+                <label for="subject-input">What is your meme about?</label>
+            </div>
+            <button class="btn waves-effect waves-light input-field col s12" id="ready-button">MEMEAKE
+
+            </button>
+        </div>
+        <div hidden id="loading-gifs">
+            <div id="loading-bar" class="progress">
+                <div class="indeterminate"></div>
+            </div>
+            <div id="gifs-container">
+                    <div class="giphy-embed-container"><iframe src="https://giphy.com/embed/byccSCWztDM2c" frameBorder="0" class="giphy-embed"></iframe></div>
+                    <div hidden class="giphy-embed-container"><iframe src="https://giphy.com/embed/F9hQLAVhWnL56" frameBorder="0" class="giphy-embed"></iframe></div>
+                    <div hidden class="giphy-embed-container"><iframe src="https://giphy.com/embed/NFgfxZFfMSylO" frameBorder="0" class="giphy-embed"></iframe></div>
+                    <div hidden class="giphy-embed-container"><iframe src="https://giphy.com/embed/5wWf7H0WTquIU1DFY4g" frameBorder="0" class="giphy-embed"></iframe></div>
+                    <div hidden class="giphy-embed-container"><iframe src="https://giphy.com/embed/WsKVAem02Efuw" frameBorder="0" class="giphy-embed"></iframe></div>
+            </div>
+        </div>
+        <div id="render-results"></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    
+    <script src="memefo.js"></script>
+    <script src="meme-formats.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
