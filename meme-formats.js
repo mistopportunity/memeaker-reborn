@@ -536,14 +536,14 @@ const MemeFormats = {
 
                 secondSubject = secondSubject.substring(0,1).toUpperCase() + secondSubject.substring(1);
 
-                if(Math.random() > 0.5) {
+                if(Math.random() > 0.68) {
                     butterflyText = subject;
-                    if(Math.random() < 0.68) {
+                    if(Math.random() < 0.9) {
                         manText = secondSubject;
                     }
                 } else {
                     manText = subject;
-                    if(Math.random() < 0.68) {
+                    if(Math.random() < 0.9) {
                         butterflyText = secondSubject;
                     }
                 }
